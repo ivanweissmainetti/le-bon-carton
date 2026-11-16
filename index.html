@@ -1,0 +1,23 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><link rel="icon" href="data:,"><meta name="theme-color" content="#19342d"><title>Le bon carton · Coopérative U × Mainetti</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#192e28;color:#f4f5e9;font:16px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.gate{display:grid;place-items:center;min-height:100svh;padding:24px;background:radial-gradient(ellipse at 70% 25%,#314c40,transparent 60%)}.panel{width:min(100%,460px);border-top:2px solid #c5d592;padding:23px 0}.label{font:600 11px ui-monospace,monospace;letter-spacing:.15em;color:#d4deb7;text-transform:uppercase}h1{font-size:clamp(44px,8vw,70px);font-weight:540;letter-spacing:-.06em;line-height:.99;margin:22px 0 12px}p{color:#cdd9ce}form{margin-top:28px}label{font-weight:600;display:block;margin-bottom:7px}input,button{font:inherit;border-radius:4px;padding:12px}input{background:#f6f5eb;color:#1c3028;border:1px solid #7b9383;width:100%}button{border:0;margin-top:12px;cursor:pointer;background:#deedb9;color:#183027;font-weight:630}button:disabled{opacity:.7}input:focus-visible,button:focus-visible{outline:3px solid #f1cf83;outline-offset:3px}#status{min-height:1.5em;margin-top:10px}iframe{position:fixed;inset:0;border:0;width:100%;height:100%;background:#1b2a27}body.playing .gate{display:none}
+</style></head><body><main class="gate"><div class="panel"><div class="label">Coopérative U × Mainetti</div><h1>Le bon carton</h1><p>Saisissez votre code pour commencer la formation au tri des cintres.</p><form id="entry"><label for="code">Code d’accès</label><input id="code" type="password" autocapitalize="none" spellcheck="false" autocomplete="off" required><button id="enter">Ouvrir la formation →</button><p id="status" role="status"></p></form></div></main>
+<script>
+const form=document.getElementById('entry'),statusText=document.getElementById('status'),field=document.getElementById('code'),submit=document.getElementById('enter');
+let payload;
+form.addEventListener('submit',async e=>{
+ e.preventDefault();if(submit.disabled)return;submit.disabled=true;
+ let downloaded=false;
+ try{
+  if(!crypto.subtle)throw new Error('Ouvrez le lien sécurisé pour accéder à la formation.');
+  if(!payload){statusText.textContent='Chargement de la formation…';const response=await fetch('formation.bin?v=979c33c0ba91703d');if(!response.ok)throw new Error('Chargement impossible. Vérifiez votre connexion et réessayez.');payload=new Uint8Array(await response.arrayBuffer())}
+  downloaded=true;statusText.textContent='Ouverture de la formation…';
+  const pass=field.value.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:payload.slice(0,16),iterations:450000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['decrypt']);
+  const data=await crypto.subtle.decrypt({name:'AES-GCM',iv:payload.slice(16,28)},key,payload.subarray(28));
+  const frame=document.createElement('iframe');frame.title='Le bon carton — formation interactive';frame.allow='autoplay; fullscreen';frame.allowFullscreen=true;frame.srcdoc=new TextDecoder().decode(data);document.body.append(frame);document.body.classList.add('playing');field.value='';payload=null;frame.focus();
+ }catch(err){statusText.textContent=downloaded?'Code incorrect. Vérifiez le code et réessayez.':(err.message||'Veuillez réessayer.');field.focus();field.select()}
+ finally{submit.disabled=false}
+});
+</script></body></html>
