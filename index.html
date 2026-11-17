@@ -10,7 +10,7 @@ form.addEventListener('submit',async e=>{
  let downloaded=false;
  try{
   if(!crypto.subtle)throw new Error('Ouvrez le lien sécurisé pour accéder à la formation.');
-  if(!payload){statusText.textContent='Chargement de la formation…';const response=await fetch('formation.bin?v=c68b3843d497224a');if(!response.ok)throw new Error('Chargement impossible. Vérifiez votre connexion et réessayez.');payload=new Uint8Array(await response.arrayBuffer())}
+  if(!payload){statusText.textContent='Chargement de la formation…';const response=await fetch('formation.bin?v=e20ee2528b16f50d');if(!response.ok)throw new Error('Chargement impossible. Vérifiez votre connexion et réessayez.');payload=new Uint8Array(await response.arrayBuffer())}
   downloaded=true;statusText.textContent='Ouverture de la formation…';
   const pass=field.value.toLowerCase().replace(/[^a-z0-9]/g,'');
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
